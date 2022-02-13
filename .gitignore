@@ -5,6 +5,9 @@
 !/nexus-am/*
 !/nanos-lite/*
 !/navy-apps/*
+!/reports/pa?
+!doc.md
+!*.png
 !Makefile
 !README.md
 !.gitignore
