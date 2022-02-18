@@ -34,10 +34,17 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+  nemu_state.state = NEMU_QUIT;
   return -1;
 }
 
 static int cmd_help(char *args);
+
+// si
+static int cmd_si(char *args);
+
+// info
+static int cmd_info(char *args);
 
 static struct {
   const char *name;
@@ -49,7 +56,9 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
-
+  { "si", "Pause execution after single-stepping N instructions, "
+    "when N is not given, the default is 1", cmd_si },
+  { "info", "r: display the value of regs", cmd_info},
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -74,6 +83,63 @@ static int cmd_help(char *args) {
     }
     printf("Unknown command '%s'\n", arg);
   }
+  return 0;
+}
+
+// si
+uint64_t str2num( const char *args ) {
+  uint16_t ans = 0;
+  // iterate over the string
+  for(int i = 0; args[i] != '\0'; ++i) {
+    unsigned num = args[i] - '0';
+    if(num >= 0 && num <= 9) {
+      // 0 ~ 9
+      ans = ans * 10 + num;
+    } else if(args[i] == ' ') {
+      // ignore space
+      continue;
+    } else {
+      // not 0 ~ 9
+      return 0;
+    }
+  }
+  return ans;
+}
+
+static int cmd_si(char *args) {
+  // get token
+  char *arg = strtok(NULL, " ");
+
+  if (arg == NULL) {
+    // no argument
+    cpu_exec(1);
+  } else {
+    // execute # times
+    cpu_exec(str2num(arg));
+  }
+
+  return 0;
+} // si end
+
+// info
+static int cmd_info( char *args ) {
+  // get token
+  char *arg = strtok(NULL, " ");
+  
+  if(arg == NULL) {
+    // no argument
+    printf("Please provide an argument!\n");
+
+  } else if(strcmp(arg, "r") == 0) {
+    // display regs' infomation
+    isa_reg_display();
+  
+  } else {
+    // argument error
+    printf("Could not find relevant information.\n");
+
+  }
+
   return 0;
 }
 
