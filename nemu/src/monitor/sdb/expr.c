@@ -25,13 +25,14 @@ static struct rule {
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
   {"==", TK_EQ},        // equal
+  {"0[x|X][0-9A-Fa-f]+", TK_HEX}, 
+                        // hexadecimal number
   {"[0-9]+", TK_DE},    // decimal
   {"-", '-'},           // subtract
   {"\\*", '*'},         // multiply
   {"/", '/'},           // divide
   {"\\(", '('},         // left parenthesis
   {"\\)", ')'},         // right parenthesis
-  {"0[x|X][0-9A-Fa-f]", TK_HEX}, // hexadecimal number
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -97,14 +98,15 @@ static bool make_token(char *e) {
               ignoreLen = substr_len - MAX_TOKEN_BUFF;
             }
 
-            int index = position + ignoreLen, strIndex = 0;
-            while(index < position + substr_len) {
+            int strIndex = 0;
+            int index = position + ignoreLen - substr_len;
+            while(index < position) {
               tokens[nr_token].str[strIndex++] = e[index++];
             }
             tokens[nr_token].str[strIndex] = '\0';
 
           default:
-            tokens[nr_token].type = rules[i].token_type;
+            tokens[nr_token++].type = rules[i].token_type;
         }
 
         break;
@@ -171,7 +173,7 @@ int get_main_op (int p, int q) {
 int minus_times = 0;
 
 word_t get_number(int p) {
-  wort_t ret = 0;
+  word_t ret = 0;
   switch (tokens[p].type) {
   case TK_DE:
     for(int i = 0; tokens[p].str[i] != '\0'; ++i) {

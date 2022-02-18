@@ -46,6 +46,9 @@ static int cmd_si(char *args);
 // info
 static int cmd_info(char *args);
 
+// x
+static int cmd_x(char *args);
+
 static struct {
   const char *name;
   const char *description;
@@ -58,7 +61,9 @@ static struct {
   /* TODO: Add more commands */
   { "si", "Pause execution after single-stepping N instructions, "
     "when N is not given, the default is 1", cmd_si },
-  { "info", "r: display the value of regs", cmd_info},
+  { "info", "[r]: display the value of regs", cmd_info},
+  { "x", "Starting from the starting memory address, output consecutive "
+    "N 4-bytes in hexadecimal form", cmd_x},
 };
 
 #define NR_CMD ARRLEN(cmd_table)
@@ -141,7 +146,33 @@ static int cmd_info( char *args ) {
   }
 
   return 0;
-}
+} // info end
+
+
+// x: scan memory
+static int cmd_x(char *args) {
+
+  // get N and expr
+  char* num = strtok(NULL, " ");
+  char* e = num + strlen(num) + 1;
+
+  int len = atoi(num);
+  bool success = true;
+  word_t addr = expr(e, &success);
+
+  if (!success) {
+    printf("Please give a correct address!\n");
+    return 0;
+  }
+
+  for (int i = 0; i < len; ++i) {
+    printf("0x%lx :\t%08lx\n", addr, vaddr_read(addr, 4));
+    addr += 4;
+  }
+
+  return 0;
+} // x
+
 
 void sdb_set_batch_mode() {
   is_batch_mode = true;
